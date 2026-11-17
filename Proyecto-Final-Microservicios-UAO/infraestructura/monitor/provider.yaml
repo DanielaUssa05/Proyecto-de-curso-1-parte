@@ -1,0 +1,6 @@
+apiVersion: 1
+providers:
+- name: Reservas
+  type: file
+  options:
+    path: /opt/reservas

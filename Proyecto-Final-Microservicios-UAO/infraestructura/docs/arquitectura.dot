@@ -1,0 +1,18 @@
+digraph arquitectura {
+ graph [rankdir=TB,bgcolor="white",pad=.2,nodesep=.22,ranksep=.5,fontname="Helvetica"];
+ node [shape=box,style="rounded,filled",fillcolor="#ecf5f3",color="#87ada8",fontname="Helvetica",fontsize=13, margin=".14,.1"];
+ edge [color="#486664",fontname="Helvetica",fontsize=10,arrowsize=.65];
+ browser [label="Navegador"];
+ subgraph cluster_swarm { label="Docker Swarm · 1 nodo Linux · red overlay curso"; color="#648380"; style=rounded;
+ gateway [label="Nginx ×2\nFrontend y API Gateway"];
+ catalog [label="Catálogo\nfacultades y salas"]; users [label="Usuarios"]; bookings [label="Reservas ×2\ncontrol de solapamiento"]; audit [label="Auditoría\nconsulta"]; analysis [label="Analítica"];
+ gateway -> {catalog users bookings audit analysis};
+ db [shape=cylinder,label="MySQL · reservas_salas\nvolumen mysql",fillcolor="#fff4d9"];
+ {catalog users bookings audit analysis} -> db;
+ pool [label="2 procesos Map\nReduce por facultad y sala"]; analysis -> pool;
+ prom [label="Prometheus\nvolumen series"]; graf [label="Grafana\nvolumen grafana"]; graf -> prom [label="PromQL"];
+ prom -> {catalog users bookings audit analysis} [style=dashed,color="#976493",constraint=false];
+ }
+ browser -> gateway [label="HTTP :8088"];
+ browser -> graf [label="HTTP :3001"];
+}

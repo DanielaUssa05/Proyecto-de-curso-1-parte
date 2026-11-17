@@ -1,0 +1,51 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: catalogo
+    dns_sd_configs:
+      - names:
+          - tasks.catalogo
+        type: A
+        port: 8000
+        refresh_interval: 5s
+
+  - job_name: usuarios
+    dns_sd_configs:
+      - names:
+          - tasks.usuarios
+        type: A
+        port: 8000
+        refresh_interval: 5s
+
+  - job_name: reservas
+    dns_sd_configs:
+      - names:
+          - tasks.reservas
+        type: A
+        port: 8000
+        refresh_interval: 5s
+
+  - job_name: auditoria
+    dns_sd_configs:
+      - names:
+          - tasks.auditoria
+        type: A
+        port: 8000
+        refresh_interval: 5s
+
+  - job_name: analitica
+    dns_sd_configs:
+      - names:
+          - tasks.analitica
+        type: A
+        port: 8000
+        refresh_interval: 5s
+
+  - job_name: exportador
+    dns_sd_configs:
+      - names:
+          - tasks.exportador
+        type: A
+        port: 8001
+        refresh_interval: 5s

@@ -1,0 +1,254 @@
+
+version: '3.8'
+
+services:
+  catalogo:
+    image: uao-reservas-api:estructura1
+    environment:
+      SERVICE: catalogo
+      DB_PASSWORD_FILE: /run/secrets/reservas_app
+    secrets:
+      - reservas_app
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 4s
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=4)
+      interval: 12s
+      timeout: 6s
+      retries: 4
+      start_period: 90s
+    networks:
+      - curso
+
+  usuarios:
+    image: uao-reservas-api:estructura1
+    environment:
+      SERVICE: usuarios
+      DB_PASSWORD_FILE: /run/secrets/reservas_app
+    secrets:
+      - reservas_app
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 4s
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=4)
+      interval: 12s
+      timeout: 6s
+      retries: 4
+      start_period: 90s
+    networks:
+      - curso
+
+  reservas:
+    image: uao-reservas-api:estructura1
+    environment:
+      SERVICE: reservas
+      DB_PASSWORD_FILE: /run/secrets/reservas_app
+    secrets:
+      - reservas_app
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: any
+        delay: 4s
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=4)
+      interval: 12s
+      timeout: 6s
+      retries: 4
+      start_period: 90s
+    networks:
+      - curso
+
+  auditoria:
+    image: uao-reservas-api:estructura1
+    environment:
+      SERVICE: auditoria
+      DB_PASSWORD_FILE: /run/secrets/reservas_app
+    secrets:
+      - reservas_app
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 4s
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=4)
+      interval: 12s
+      timeout: 6s
+      retries: 4
+      start_period: 90s
+    networks:
+      - curso
+
+  analitica:
+    image: uao-reservas-api:estructura1
+    environment:
+      SERVICE: analitica
+      DB_PASSWORD_FILE: /run/secrets/reservas_app
+    secrets:
+      - reservas_app
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 4s
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=4)
+      interval: 12s
+      timeout: 6s
+      retries: 4
+      start_period: 90s
+    networks:
+      - curso
+
+  exportador:
+    image: uao-reservas-exportador:1
+    environment:
+      EXPORTER_PORT: "8001"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 4s
+    networks:
+      - curso
+
+  db:
+    image: uao-reservas-db:estructura1
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/reservas_root
+      MYSQL_DATABASE: reservas_salas
+      MYSQL_USER: reservas
+      MYSQL_PASSWORD_FILE: /run/secrets/reservas_app
+    secrets:
+      - reservas_app
+      - reservas_root
+    volumes:
+      - mysql:/var/lib/mysql
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 4s
+      placement:
+        constraints:
+          - node.labels.reservas_datos == si
+    networks:
+      - curso
+    ports:
+      - 3307:3306
+
+  gateway:
+    image: uao-reservas-web:estructura1
+    ports:
+      - 8088:80
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: any
+        delay: 4s
+    networks:
+      - curso
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    ports:
+      - 9091:9090
+    configs:
+      - source: prom_v2
+        target: /etc/prometheus/prometheus.yml
+    volumes:
+      - series:/prometheus
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 4s
+      placement:
+        constraints:
+          - node.labels.reservas_datos == si
+    networks:
+      - curso
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    ports:
+      - 3001:3000
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/reservas_grafana
+    secrets:
+      - reservas_grafana
+    configs:
+      - source: source
+        target: /etc/grafana/provisioning/datasources/prom.yml
+      - source: provider
+        target: /etc/grafana/provisioning/dashboards/provider.yml
+      - source: panels
+        target: /opt/reservas/dashboard.json
+    volumes:
+      - grafana:/var/lib/grafana
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 4s
+      placement:
+        constraints:
+          - node.labels.reservas_datos == si
+    networks:
+      - curso
+
+networks:
+  curso:
+    driver: overlay
+
+volumes:
+  mysql: {}
+  series: {}
+  grafana: {}
+
+configs:
+  prom_v2:
+    external: true
+    name: uao_prom_v2
+  source:
+    file: ./monitor/datasource.yaml
+  provider:
+    file: ./monitor/provider.yaml
+  panels:
+    external: true
+    name: uao_panels_v2
+
+secrets:
+  reservas_app:
+    external: true
+  reservas_root:
+    external: true
+  reservas_grafana:
+    external: true

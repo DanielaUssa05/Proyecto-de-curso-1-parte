@@ -1,0 +1,101 @@
+
+{
+  "uid": "reservas",
+  "title": "Reservas universitarias",
+  "schemaVersion": 39,
+  "refresh": "5s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Réplicas que responden",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "sum(up) by (job)", "legendFormat": "{{job}}", "refId": "A"}],
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8}
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Solicitudes por segundo",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "sum(rate(reservas_http_total[1m])) by (servicio)", "legendFormat": "{{servicio}}", "refId": "A"}],
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8}
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Respuestas con error por minuto",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "sum(increase(reservas_http_total{estado=~\"[45]..\"}[1m])) by (servicio,estado)", "legendFormat": "{{servicio}} {{estado}}", "refId": "A"}],
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8}
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Latencia p95 en segundos",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "histogram_quantile(0.95,sum(rate(reservas_duracion_segundos_bucket[1m])) by (le,servicio))", "legendFormat": "{{servicio}}", "refId": "A"}],
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8}
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Total de reservas simuladas",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "reservas_simuladas_total", "refId": "A"}],
+      "gridPos": {"x": 0, "y": 16, "w": 8, "h": 5}
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Reservas por estado",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "reservas_simuladas_por_estado", "legendFormat": "{{estado}}", "refId": "A"}],
+      "gridPos": {"x": 8, "y": 16, "w": 8, "h": 5}
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Reservas por mes",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "reservas_simuladas_por_mes", "legendFormat": "{{mes}}", "refId": "A"}],
+      "gridPos": {"x": 16, "y": 16, "w": 8, "h": 5}
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Reservas por sala",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "reservas_simuladas_por_sala", "legendFormat": "{{sala}}", "refId": "A"}],
+      "gridPos": {"x": 0, "y": 21, "w": 12, "h": 8}
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Reservas por facultad",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "reservas_simuladas_por_facultad", "legendFormat": "{{facultad}}", "refId": "A"}],
+      "gridPos": {"x": 12, "y": 21, "w": 12, "h": 8}
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Demanda por hora de inicio",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "reservas_simuladas_por_hora", "legendFormat": "{{hora}}", "refId": "A"}],
+      "gridPos": {"x": 0, "y": 29, "w": 12, "h": 8}
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Reservas por duración",
+      "datasource": {"type": "prometheus", "uid": "prom"},
+      "targets": [{"expr": "reservas_simuladas_por_duracion", "legendFormat": "{{duracion_minutos}} minutos", "refId": "A"}],
+      "gridPos": {"x": 12, "y": 29, "w": 12, "h": 8}
+    }
+  ]
+}
